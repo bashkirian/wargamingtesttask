@@ -1,16 +1,5 @@
-#pragma once
-#ifndef _CYCLIC_QUEUE_LIST_
-#define _CYCLIC_QUEUE_LIST_
-
 #include <xmemory>
 #include <stdexcept>
-
-namespace test_tasks
-{
-namespace impl_on_list
-{
-namespace statically
-{
 
     template<typename ItemType>
     class cyclic_queue_item
@@ -34,7 +23,7 @@ namespace statically
 
         cyclic_queue_item(list_item&& right) noexcept
         {
-            assign(std::move_if_noexcept(right));
+            assign(std::move(right));
         }
 
 
@@ -47,7 +36,7 @@ namespace statically
 
         list_item& operator=(list_item&& right) noexcept
         {
-            assign(std::move_if_noexcept(right));
+            assign(std::move(right));
             return *this;
         }
 
@@ -61,8 +50,7 @@ namespace statically
 
         void assign(list_item&& right) noexcept
         {
-            // use move_if_noexcept, because the assign function is marked as noexcept.
-            value = std::move_if_noexcept(right.value);
+            value = std::move(right.value);
             next = nullptr;
             right.next = nullptr;
         }
@@ -102,7 +90,7 @@ namespace statically
 
         cyclic_queue(cyclic_queue&& right) noexcept
         {
-            assign(std::move_if_noexcept(right));
+            assign(std::move(right));
         }
 
 
@@ -115,7 +103,7 @@ namespace statically
 
         cyclic_queue& operator=(cyclic_queue&& right) noexcept
         {
-            assign(std::move_if_noexcept(right));
+            assign(std::move(right));
             return *this;
         }
 
@@ -141,7 +129,7 @@ namespace statically
             _head = _head->next;
         }
 
-        _NODISCARD value_type pop()
+        value_type pop()
         {
             if (empty())
                 throw std::logic_error("Queue is empty!");
@@ -153,22 +141,22 @@ namespace statically
             return elem;
         }
 
-        _NODISCARD size_t count() const noexcept
+        size_t count() const noexcept
         {
             return _count;
         }
 
-        _NODISCARD _CONSTEXPR17 size_t size() const noexcept
+        size_t size() const noexcept
         {
             return Size;
         }
 
-        _NODISCARD bool full() const noexcept
+        bool full() const noexcept
         {
             return _count == Size;
         }
 
-        _NODISCARD bool empty() const noexcept
+        bool empty() const noexcept
         {
             return _count == 0;
         }
@@ -215,7 +203,6 @@ namespace statically
 
             for (int i = 0; i < Size; ++i)
             {
-                // use move_if_noexcept, because the assign function is marked as noexcept.
                 _elems[i] = std::move_if_noexcept(right._elems[i]);
             }
 
@@ -228,37 +215,25 @@ namespace statically
 
         void assign_setup(const cyclic_queue& right) noexcept
         {
-            // reset pointer for list
             for (int i = 0; i < Size - 1; ++i)
             {
                 _elems[i].next = &_elems[i + 1];
             }
             _elems[Size - 1].next = &_elems[0];
 
-
-            // some pointer magic
-            // calculate shift for start of array
             index_t right_index_head = get_index_for_pointer(right._elems, right._head);
             index_t right_index_tail = get_index_for_pointer(right._elems, right._tail);
 
-
-            // and here set new pointers
             _head = _elems + right_index_head;
             _tail = _elems + right_index_tail;
             _count = right._count;
         }
 
 
-        _NODISCARD static index_t
+        static index_t
         get_index_for_pointer(const_list_pointer rel_list, const_list_pointer ptr) noexcept
         {
             return static_cast<index_t>(static_cast<int>(ptr - rel_list) / sizeof(ptr));
         }
 
     };
-
-}
-}
-}
-
-#endif // _CYCLIC_QUEUE_LIST_
