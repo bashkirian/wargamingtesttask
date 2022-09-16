@@ -1,30 +1,16 @@
-#pragma once
-
-#ifndef _CYCLIC_QUEUE_
-#define _CYCLIC_QUEUE_
-
 #include <xmemory>
 #include <stdexcept>
-
-namespace test_tasks
-{
-namespace impl_on_array
-{
-namespace statically
-{
 
     template <typename ElementType, size_t Size>
     class cyclic_queue
     {
     public:
-        using value_type        = ElementType;
         using index_t           = size_t;
-
         using alloc_traits      = std::allocator_traits<std::allocator<ElementType>>;
 
 
     public:
-        cyclic_queue() noexcept
+        cyclic_queue() 
         {
             _head = 0;
             _tail = 0;
@@ -36,9 +22,9 @@ namespace statically
             assign(right);
         }
 
-        cyclic_queue(cyclic_queue&& right) noexcept
+        cyclic_queue(cyclic_queue&& right)
         {
-            assign(std::move_if_noexcept(right));
+            assign(std::move(right));
         }
 
 
@@ -51,16 +37,16 @@ namespace statically
 
         cyclic_queue& operator=(cyclic_queue&& right) noexcept
         {
-            assign(std::move_if_noexcept(right));
+            assign(std::move(right));
             return *this;
         }
 
-        void push(const value_type& elem)
+        void push(const ElementType& elem)
         {
             emplace(elem);
         }
 
-        void push(value_type&& elem)
+        void push(ElementType&& elem)
         {
             emplace(std::move(elem));
         }
@@ -77,34 +63,34 @@ namespace statically
             _head = next_index(_head);
         }
 
-        _NODISCARD value_type pop()
+        ElementType pop()
         {
             if (empty())
                 throw std::logic_error("Queue is empty!");
 
-            value_type elem = std::move(_elems[_tail]);
+            ElementType elem = std::move(_elems[_tail]);
 
             --_count;
             _tail = next_index(_tail);
             return elem;
         }
 
-        _NODISCARD size_t count() const noexcept
+        size_t count() const
         {
             return _count;
         }
 
-        _NODISCARD _CONSTEXPR17 size_t size() const noexcept
+        size_t size() const
         {
             return Size;
         }
 
-        _NODISCARD bool full() const noexcept
+        bool full() const
         {
             return _count == Size;
         }
 
-        _NODISCARD bool empty() const noexcept
+        bool empty() const
         {
             return _count == 0;
         }
@@ -122,13 +108,13 @@ namespace statically
 
 
     private:
-        value_type _elems[Size];
+        ElementType _elems[Size];
         index_t _head;
         index_t _tail;
 
         size_t _count;
 
-        std::allocator<value_type> _alloc;
+        std::allocator<ElementType> _alloc;
 
 
     private:
@@ -162,21 +148,14 @@ namespace statically
 
             for (int i = 0; i < Size; ++i)
             {
-                // use move_if_noexcept, because the assign function is marked as noexcept.
-                _elems[i] = std::move_if_noexcept(right._elems[i]);
+                _elems[i] = std::move(right._elems[i]);
             }
         }
 
-        _NODISCARD _CONSTEXPR17 index_t next_index(index_t ind) const noexcept
+        index_t next_index(index_t ind) const
         {
             ++ind;
             return ind >= Size ? 0 : ind;
         }
 
     };
-
-}
-}
-}
-
-#endif // _CYCLIC_QUEUE_
